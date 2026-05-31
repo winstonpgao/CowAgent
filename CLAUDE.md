@@ -8,6 +8,14 @@ For required AI review, use Claude CLI subscription only.
 - Verify `modelUsage.claude-opus-4-8` in raw JSON.
 - Prefer fresh one-shot review: `--no-session-persistence`.
 - Prefer bounded read-only review: `--tools=Read`.
+- Review failure recovery rule: if Opus times out, returns no verdict, asks
+  questions instead of reviewing, returns `is_error=true`, or hits a
+  thinking/API/socket error, mark the attempt invalid. Do not recover by
+  switching to no-tools, verdict-only, one-file, or context-free prompts. Keep
+  the standard bounded packet shape with `--no-session-persistence`,
+  `--tools=Read`, exact file references, and explicit verdict format. Split
+  only by actual subsystem/slice. After 3 invalid attempts on the same gate,
+  stop and report the review-tool blocker with raw JSON/error paths.
 - Do not use API-key, API-base, or Bedrock Claude routes for required review.
 - Do not attach files to Opus.
 - Do not paste whole files unless the packet is intentionally tiny.
@@ -17,4 +25,5 @@ For required AI review, use Claude CLI subscription only.
 - If review returns REQUEST_CHANGES, blocker, or major: fix, test, and rerun until the final valid review has 0 blockers and 0 majors.
 - Save raw JSON and markdown review logs under the repo's review log folder.
 - New non-standard artifacts created by Codex use `_codex`; new non-standard artifacts created by Claude use `_claude`. Standard protocol files may keep their existing names but must identify the producer inside.
+
 
